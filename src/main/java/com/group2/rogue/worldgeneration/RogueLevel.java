@@ -57,12 +57,31 @@ public class RogueLevel {
     }
 
     private static void makeRoom(int row, int col, int roomWidth, int roomHeight){
+        int spacingX = random.nextInt(3)+2;
+        int spacingY = random.nextInt(2)+1;
+
         int startingX = col * (levelWidth / 3) + random.nextInt(3);
         int startingY =  row * (levelHeight / 3) + random.nextInt(2);
 
+        if (random.nextBoolean()) {
+            roomWidth += random.nextInt(3) + 2;  
+        } else {
+            roomHeight += random.nextInt(3) + 2; 
+        }
+
         for (int i = startingY; i < startingY + roomHeight && i<levelHeight-1; i++){
             for(int j = startingX; j < startingX + roomWidth && j<levelWidth-1; j++){
-                level[i][j] = FLOOR;
+                if (i >= 0 && i < levelHeight && j >= 0 && j < levelWidth) {
+                    // If it's at the edge of the room, it's a wall
+                    if (i == startingY - 1 || i == startingY + roomHeight ||
+                        j == startingX - 1 || j == startingX + roomWidth) {
+                        if (level[i][j] == EMPTY) {
+                            level[i][j] = WALL; // Place wall only in empty spots
+                        }
+                    } else {
+                        level[i][j] = FLOOR; // Inside the room remains floor
+                    }
+                }
             }
         }
     }
