@@ -47,44 +47,66 @@ public class RogueLevel {
         for(int row = 0; row < 3; row++){
             for(int col = 0; col < 3; col++){
                 if(random.nextDouble() < 0.7){
-                    roomExists[row][col] = true;
                     roomWidth = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
                     roomHeight = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
-                    makeRoom(row, col, roomWidth, roomHeight);
+
+                    int spacingX = random.nextInt(3) + 2;
+                    int spacingY = random.nextInt(2) + 1;
+                    int startX = col * (levelWidth / 3) + spacingX;
+                    int startY = row * (levelHeight / 3) + spacingY;
+
+                    if (canPlaceRoom(startX, startY, roomWidth, roomHeight)) {
+                        roomExists[row][col] = true;
+                        makeRoom(startX, startY, roomWidth, roomHeight);
+                    }
+
+                    // roomExists[row][col] = true;
+                    // roomWidth = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
+                    // roomHeight = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
+                    // makeRoom(row, col, roomWidth, roomHeight);
                 }
             }
         }
     }
 
-    private static void makeRoom(int row, int col, int roomWidth, int roomHeight) {
-        int spacingX = random.nextInt(3) + 2;
-        int spacingY = random.nextInt(2) + 1;
-    
-        int startingX = col * (levelWidth / 3) + spacingX;
-        int startingY = row * (levelHeight / 3) + spacingY;
-    
-        if (random.nextBoolean()) {
-            roomWidth += random.nextInt(3) + 2;
-        } else {
-            roomHeight += random.nextInt(3) + 2;
+    private static boolean canPlaceRoom(int startX, int startY, int width, int height) {
+        int padding = 2;
+        
+        if (startX - padding < 0 || startY - padding < 0 || 
+            startX + width + padding >= levelWidth || 
+            startY + height + padding >= levelHeight) {
+            return false;
         }
-    
-        // **STEP 1: Place Floors (`.`)**
-        for (int i = startingY; i < startingY + roomHeight && i < levelHeight - 1; i++) {
-            for (int j = startingX; j < startingX + roomWidth && j < levelWidth - 1; j++) {
-                level[i][j] = FLOOR;
+        
+        for (int y = startY - padding; y <= startY + height + padding; y++) {
+            for (int x = startX - padding; x <= startX + width + padding; x++) {
+                if (level[y][x] != EMPTY) {
+                    return false;
+                }
             }
         }
-    
-        // **STEP 2: Surround Floor with Walls (`#`)**
-        for (int i = startingY - 1; i <= startingY + roomHeight; i++) {
-            for (int j = startingX - 1; j <= startingX + roomWidth; j++) {
-                if (i >= 0 && i < levelHeight && j >= 0 && j < levelWidth) {
-                    // Only place walls if the tile is still EMPTY
-                    if (level[i][j] == EMPTY) {
-                        level[i][j] = WALL;
-                    }
-                }
+        return true;
+    }
+
+    private static void makeRoom(int startX, int startY, int width, int height) {
+        for (int y = startY; y < startY + height; y++) {
+            for (int x = startX; x < startX + width; x++) {
+                level[y][x] = FLOOR;
+            }
+        }
+        
+
+        for (int x = startX - 1; x <= startX + width; x++) {
+            if (x >= 0 && x < levelWidth) {
+                if (startY - 1 >= 0) level[startY - 1][x] = WALL;
+                if (startY + height < levelHeight) level[startY + height][x] = WALL;
+            }
+        }
+        
+        for (int y = startY - 1; y <= startY + height; y++) {
+            if (y >= 0 && y < levelHeight) {
+                if (startX - 1 >= 0) level[y][startX - 1] = WALL;
+                if (startX + width < levelWidth) level[y][startX + width] = WALL;
             }
         }
     }
