@@ -16,6 +16,9 @@ public class RogueLevel {
     private static char[][] level = new char[levelHeight][levelWidth];
     private static boolean[][] roomExists = new boolean[3][3];
 
+    private static final int gridRows = 3;
+    private static final int gridCols = 3;
+
     public static void main(String[] args) {
         initializeLevel();
         generateRooms();
@@ -40,53 +43,45 @@ public class RogueLevel {
         }
     }
 
-    private static void generateRooms(){
-        int roomWidth;
-        int roomHeight;
+    private static void generateRooms() {
+        int sectionWidth = levelWidth/ gridCols;
+        int sectionHeight = levelHeight / gridRows;
 
-        for(int row = 0; row < 3; row++){
-            for(int col = 0; col < 3; col++){
-                if(random.nextDouble() < 0.7){
-                    roomWidth = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
-                    roomHeight = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
+        int maxPossibleWidth = sectionWidth-4;
+        int maxPossibleHeight = sectionHeight-4;
 
-                    int spacingX = random.nextInt(3) + 2;
-                    int spacingY = random.nextInt(2) + 1;
-                    int startX = col * (levelWidth / 3) + spacingX;
-                    int startY = row * (levelHeight / 3) + spacingY;
+        int effectiveMaxWidth = Math.min(maxRoomSize, maxPossibleWidth);
+        int effectiveMaxHeight = Math.min(maxRoomSize, maxPossibleHeight);
 
-                    if (canPlaceRoom(startX, startY, roomWidth, roomHeight)) {
-                        roomExists[row][col] = true;
-                        makeRoom(startX, startY, roomWidth, roomHeight);
-                    }
+        for(int row = 0; row < gridRows; row++) {
+            for(int col = 0; col < gridCols; col++) {
+                if(random.nextDouble() < 0.75) {  // 75% chance to place a room
 
-                    // roomExists[row][col] = true;
-                    // roomWidth = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
-                    // roomHeight = random.nextInt(maxRoomSize - minRoomSize + 1) + minRoomSize;
-                    // makeRoom(row, col, roomWidth, roomHeight);
+                    int sectionStartX = col * sectionWidth;  //get the bounds
+                    int sectionStartY = row * sectionHeight;
+                    
+                    int roomWidth = random.nextInt(effectiveMaxWidth - minRoomSize + 1) + minRoomSize;  //dimensions
+                    int roomHeight = random.nextInt(effectiveMaxHeight - minRoomSize + 1) + minRoomSize;
+
+                    int maxOffsetX = sectionWidth - roomWidth - 4;
+                    int maxOffsetY = sectionHeight - roomHeight - 4;
+
+                    int offsetX = (maxOffsetX > 0) ? random.nextInt(maxOffsetX + 1) : 0;
+                    int offsetY = (maxOffsetY > 0) ? random.nextInt(maxOffsetY + 1) : 0;
+                    
+                    int roomStartX = sectionStartX + 2 + offsetX;
+                    int roomStartY = sectionStartY + 2 + offsetY;
+
+                    makeRoom(roomStartX, roomStartY, roomWidth, roomHeight);
+                    roomExists[row][col] = true;
+                    
+
                 }
             }
         }
+
     }
 
-    private static boolean canPlaceRoom(int startX, int startY, int width, int height) {
-        int padding = 2;
-        
-        if (startX - padding < 0 || startY - padding < 0 || 
-            startX + width + padding >= levelWidth || 
-            startY + height + padding >= levelHeight) {
-            return false;
-        }
-        
-        for (int y = startY - padding; y <= startY + height + padding; y++) {
-            for (int x = startX - padding; x <= startX + width + padding; x++) {
-                if (level[y][x] != EMPTY) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
     private static void makeRoom(int startX, int startY, int width, int height) {
         for (int y = startY; y < startY + height; y++) {
@@ -115,3 +110,5 @@ public class RogueLevel {
 
 
 }
+
+
