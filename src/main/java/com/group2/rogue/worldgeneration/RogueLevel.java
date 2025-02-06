@@ -28,6 +28,12 @@ public class RogueLevel {
 
     }
 
+    public static void generateLevel(){
+        initializeLevel();
+        generateRooms();
+        connectRooms();
+    }
+
     public static void printLevel(){
         for(int i = 0; i < levelHeight; i++){
             for(int j = 0; j < levelWidth; j++){
@@ -107,7 +113,7 @@ public class RogueLevel {
             }
         }
 
-        int roomIndex = (startY / (levelHeight / 3)) * 3 + (startX / (levelWidth / 3));
+        int roomIndex = (startY / (levelHeight / 3)) * 3 + (startX / (levelWidth / 3));  //used to connect the rooms later on
         centers[roomIndex][0] = startX + width/2;
         centers[roomIndex][1] = startY + height/2;
     }
