@@ -138,4 +138,5 @@ public class RogueLevel {
             System.out.println(new String(row));
         }
     }
+
 }

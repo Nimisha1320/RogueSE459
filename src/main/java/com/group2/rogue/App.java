@@ -12,7 +12,7 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             world.displayWorld();
-            System.out.print("Move (WASD): ");
+            System.out.print("Quit (Q) | Move (WASD): ");
             String input = scanner.nextLine().toUpperCase();
 
             if (input.equals("Q")) { // Quit game
