@@ -11,6 +11,9 @@ public class RogueLevel {
     private static final char WALL = '#';
     private static final char HALLWAY = '+';
     private static final char EMPTY = ' ';
+    private static final char STAIRS_UP = '%';
+    private static final char STAIRS_DOWN = '>';
+
     private static Random random = new Random();
 
     private static char[][] level = new char[levelHeight][levelWidth];
@@ -24,6 +27,7 @@ public class RogueLevel {
         initializeLevel();
         generateRooms();
         connectRooms();
+        placeStairs();
         printLevel();
 
     }
@@ -32,6 +36,7 @@ public class RogueLevel {
         initializeLevel();
         generateRooms();
         connectRooms();
+        placeStairs();
     }
 
     public static void printLevel(){
@@ -155,6 +160,28 @@ public class RogueLevel {
         for(int y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {  //draws the vertical part next
             if(level[y][x2] == EMPTY) level[y][x2] = HALLWAY;
             if(level[y][x2] == WALL) level[y][x2] = HALLWAY;
+        }
+    }
+
+    private static void placeStairs() {
+        for(int attempts = 0; attempts < 100; attempts++) {  //100 tries to place the upstairs
+            int x = random.nextInt(levelWidth);
+            int y = random.nextInt(levelHeight);
+            
+            if(level[y][x] == FLOOR) {
+                level[y][x] = STAIRS_UP;
+                break;
+            }
+        }
+        
+        for(int attempts = 0; attempts < 100; attempts++) {   //same for downstairs
+            int x = random.nextInt(levelWidth);
+            int y = random.nextInt(levelHeight);
+            
+            if(level[y][x] == FLOOR && level[y][x] != STAIRS_UP) {
+                level[y][x] = STAIRS_DOWN;
+                break;
+            }
         }
     }
 
