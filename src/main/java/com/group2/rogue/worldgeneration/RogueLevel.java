@@ -76,10 +76,11 @@ public class RogueLevel {
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
                 if (random.nextDouble() < 0.80) {  // 75% chance to place a room
-                    int sectionStartX = col * sectionWidth;
+
+                    int sectionStartX = col * sectionWidth;  //get the bounds
                     int sectionStartY = row * sectionHeight;
 
-                    int roomWidth = random.nextInt(effectiveMaxWidth - MIN_ROOM_SIZE + 1) + MIN_ROOM_SIZE;
+                    int roomWidth = random.nextInt(effectiveMaxWidth - MIN_ROOM_SIZE + 1) + MIN_ROOM_SIZE;   //dimensions of room
                     int roomHeight = random.nextInt(effectiveMaxHeight - MIN_ROOM_SIZE + 1) + MIN_ROOM_SIZE;
 
                     int maxOffsetX = sectionWidth - roomWidth - 4;
@@ -106,7 +107,7 @@ public class RogueLevel {
             }
         }
 
-        for (int x = startX - 1; x <= startX + width; x++) {
+        for (int x = startX - 1; x <= startX + width; x++) {   //two for loops to make the walls, one for horiz, one for vert
             if (x >= 0 && x < levelWidth) {
                 if (startY - 1 >= 0) level[startY - 1][x] = WALL;
                 if (startY + height < levelHeight) level[startY + height][x] = WALL;
@@ -120,40 +121,17 @@ public class RogueLevel {
             }
         }
 
-        int roomIndex = (startY / (levelHeight / 3)) * 3 + (startX / (levelWidth / 3));
+        int roomIndex = (startY / (levelHeight / 3)) * 3 + (startX / (levelWidth / 3));   //used to connect the rooms later on
         centers[roomIndex][0] = startX + width / 2;
         centers[roomIndex][1] = startY + height / 2;
     }
 
-    private void createRoom(int x, int y, int w, int h) {
-        for (int i = y; i < y + h; i++) {
-            for (int j = x; j < x + w; j++) {
-                level[i][j] = FLOOR;
-            }
-        }
-        for (int i = y - 1; i <= y + h; i++) {
-            if (i >= 0 && i < levelHeight) {
-                if (x - 1 >= 0)
-                    level[i][x - 1] = WALL;
-                if (x + w < levelWidth)
-                    level[i][x + w] = WALL;
-            }
-        }
-        for (int j = x - 1; j <= x + w; j++) {
-            if (j >= 0 && j < levelWidth) {
-                if (y - 1 >= 0)
-                    level[y - 1][j] = WALL;
-                if (y + h < levelHeight)
-                    level[y + h][j] = WALL;
-            }
-        }
-    }
 
     private void connectRooms() {
 
         boolean[][] isConnected = new boolean[GRID_ROWS][GRID_COLS];
 
-        for (int row = 0; row < GRID_ROWS; row++) {
+        for (int row = 0; row < GRID_ROWS; row++) {   //horizontal connections
             for (int col = 0; col < GRID_COLS - 1; col++) {
                 if (roomExists[row][col] && roomExists[row][col + 1]) {
                     int room1Index = row * 3 + col;
@@ -168,7 +146,7 @@ public class RogueLevel {
             }
         }
 
-        for (int col = 0; col < GRID_COLS; col++) {
+        for (int col = 0; col < GRID_COLS; col++) {   //vertical connections
             for (int row = 0; row < GRID_ROWS - 1; row++) {
                 if (roomExists[row][col] && roomExists[row + 1][col]) {
                     int room1Index = row * 3 + col;
@@ -248,8 +226,7 @@ public class RogueLevel {
     }
 
     private void placeStairs() {
-        for (int attempts = 0; attempts < 100; attempts++) {
-            int x = random.nextInt(levelWidth);
+        for (int attempts = 0; attempts < 100; attempts++) {   //100 tries to place both types of stairs, works good enough
             int y = random.nextInt(levelHeight);
 
             if (level[y][x] == FLOOR) {
