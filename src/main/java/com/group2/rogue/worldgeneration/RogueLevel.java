@@ -75,7 +75,7 @@ public class RogueLevel {
 
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
-                if (random.nextDouble() < 0.80) {  // 75% chance to place a room
+                if (random.nextDouble() < 0.90) {  // 90% chance to place a room
 
                     int sectionStartX = col * sectionWidth;  //get the bounds
                     int sectionStartY = row * sectionHeight;
@@ -227,7 +227,9 @@ public class RogueLevel {
 
     private void placeStairs() {
         for (int attempts = 0; attempts < 100; attempts++) {   //100 tries to place both types of stairs, works good enough
+            int x = random.nextInt(levelWidth);
             int y = random.nextInt(levelHeight);
+            
 
             if (level[y][x] == FLOOR) {
                 level[y][x] = STAIRS_UP;
