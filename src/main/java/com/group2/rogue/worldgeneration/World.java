@@ -1,13 +1,21 @@
 package com.group2.rogue.worldgeneration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.group2.rogue.player.Player;
 
 public class World {
-    private RogueLevel level;
+    private List <RogueLevel> levels;
+    private RogueLevel level;  //points to the current level
     private Player player;
 
     public void generateWorld() {
-        level = new RogueLevel();
+        levels = new ArrayList<>();   //world has 9 levels
+        for (int i = 0; i < 9; i++) {
+            levels.add(new RogueLevel());
+        }
+        level = levels.get(0);
     }
 
     public void placePlayer() {

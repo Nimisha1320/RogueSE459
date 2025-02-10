@@ -38,7 +38,8 @@ public class Player {
         if (newX < 0 || newY < 0 || newX >= dungeonMap[0].length || newY >= dungeonMap.length) {
             return false;
         }
-        return dungeonMap[newY][newX] == '.'; // Only move on floor tiles
+        char tile = dungeonMap[newY][newX];
+        return tile == '.' || tile == '+'; // can move on floor and in hallways
     }
 
     public int getX() { return x; }
