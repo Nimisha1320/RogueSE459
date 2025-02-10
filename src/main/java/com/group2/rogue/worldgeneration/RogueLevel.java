@@ -29,6 +29,9 @@ public class RogueLevel {
     private final int[][] centers = new int[9][2];
     private final List<int[]> roomCenters = new ArrayList<>();
 
+    private final boolean[][] connected = new boolean[9][9]; // needed so that we dont get floating rooms  CHANGED
+
+
     public RogueLevel() {
         generateLevel();
     }
@@ -37,6 +40,7 @@ public class RogueLevel {
         initializeLevel();
         generateRooms();
         connectRooms();
+        ensureAllRoomsConnected();
         placeStairs();
     }
 
@@ -71,7 +75,7 @@ public class RogueLevel {
 
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
-                if (random.nextDouble() < 0.75) {  // 75% chance to place a room
+                if (random.nextDouble() < 0.80) {  // 75% chance to place a room
                     int sectionStartX = col * sectionWidth;
                     int sectionStartY = row * sectionHeight;
 
@@ -146,7 +150,9 @@ public class RogueLevel {
     }
 
     private void connectRooms() {
-        // Grid-based connections
+
+        boolean[][] isConnected = new boolean[GRID_ROWS][GRID_COLS];
+
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS - 1; col++) {
                 if (roomExists[row][col] && roomExists[row][col + 1]) {
@@ -156,6 +162,8 @@ public class RogueLevel {
                         centers[room1Index][0], centers[room1Index][1],
                         centers[room2Index][0], centers[room2Index][1]
                     );
+                    isConnected[row][col] = true;
+                    isConnected[row][col + 1] = true;
                 }
             }
         }
@@ -169,9 +177,60 @@ public class RogueLevel {
                         centers[room1Index][0], centers[room1Index][1],
                         centers[room2Index][0], centers[room2Index][1]
                     );
+                    isConnected[row][col] = true;
+                    isConnected[row + 1][col] = true;
                 }
             }
         }
+
+        //attempt to connect islands, not working the best, def come back to this later
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLS; col++) {
+                if (roomExists[row][col] && !isConnected[row][col]) {
+                    double shortestDist = Double.MAX_VALUE;
+                    int closestRow = -1;
+                    int closestCol = -1;
+
+                    for (int row2 = 0; row2 < GRID_ROWS; row2++) {   //look for closest room
+                        for (int col2 = 0; col2 < GRID_COLS; col2++) {
+                            if (roomExists[row2][col2] && isConnected[row2][col2]) {
+                                int room1Index = row * 3 + col;
+                                int room2Index = row2 * 3 + col2;
+                                
+                                int x1 = centers[room1Index][0];
+                                int y1 = centers[room1Index][1];
+                                int x2 = centers[room2Index][0];
+                                int y2 = centers[room2Index][1];
+                                
+                                double dist = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+                                
+                                if (dist < shortestDist) {
+                                    shortestDist = dist;
+                                    closestRow = row2;
+                                    closestCol = col2;
+                                }
+                            }
+                        }
+                    }
+
+                    if (closestRow != -1) {   //connect isolated room to nearest
+                        int room1Index = row * 3 + col;
+                        int room2Index = closestRow * 3 + closestCol;
+                        createHallway(
+                            centers[room1Index][0], centers[room1Index][1],
+                            centers[room2Index][0], centers[room2Index][1]
+                        );
+                        isConnected[row][col] = true;
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    private void ensureAllRoomsConnected() {
+        //TODO
     }
 
     private void createHallway(int x1, int y1, int x2, int y2) {
