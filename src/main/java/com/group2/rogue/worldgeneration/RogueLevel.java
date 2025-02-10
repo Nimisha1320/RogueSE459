@@ -5,19 +5,28 @@ import java.util.List;
 import java.util.Random;
 
 public class RogueLevel {
-    private static final int LEVEL_WIDTH = 80;
-    private static final int LEVEL_HEIGHT = 24;
+    private static final int levelWidth = 80;
+    private static final int levelHeight = 24;
     private static final char FLOOR = '.';
     private static final char WALL = '#';
     private static final char EMPTY = ' ';
-    private static final char STAIRS = '%';
+    private static final char HALLWAY = '+';
+    private static final char STAIRS_UP = '%';
+    private static final char STAIRS_DOWN = '>';
+
 
     private static final int MAX_ROOMS = 8;
-    private static final int MIN_ROOM_SIZE = 4;
-    private static final int MAX_ROOM_SIZE = 10;
+    private static final int MIN_ROOM_SIZE = 3;
+    private static final int MAX_ROOM_SIZE = 11;
+
+    private static final int GRID_ROWS = 3;
+    private static final int GRID_COLS = 3;
 
     private final Random random = new Random();
-    private final char[][] level = new char[LEVEL_HEIGHT][LEVEL_WIDTH];
+    private final char[][] level = new char[levelHeight][levelWidth];
+    private final boolean[][] roomExists = new boolean[GRID_ROWS][GRID_COLS];
+
+    private final int[][] centers = new int[9][2];
     private final List<int[]> roomCenters = new ArrayList<>();
 
     public RogueLevel() {
@@ -39,42 +48,77 @@ public class RogueLevel {
         if (!roomCenters.isEmpty()) {
             return roomCenters.get(0); // Return the center of the first generated room
         }
-        return new int[] { LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2 }; // Fallback
+        return new int[] { levelWidth / 2, levelHeight / 2 }; // Fallback
     }
 
     private void initializeLevel() {
-        for (int y = 0; y < LEVEL_HEIGHT; y++) {
-            for (int x = 0; x < LEVEL_WIDTH; x++) {
+        for (int y = 0; y < levelHeight; y++) {
+            for (int x = 0; x < levelWidth; x++) {
                 level[y][x] = EMPTY;
             }
         }
     }
 
     private void generateRooms() {
-        int roomCount = 0;
-        while (roomCount < MAX_ROOMS) {
-            int w = random.nextInt(MAX_ROOM_SIZE - MIN_ROOM_SIZE) + MIN_ROOM_SIZE;
-            int h = random.nextInt(MAX_ROOM_SIZE - MIN_ROOM_SIZE) + MIN_ROOM_SIZE;
-            int x = random.nextInt(LEVEL_WIDTH - w - 1) + 1;
-            int y = random.nextInt(LEVEL_HEIGHT - h - 1) + 1;
+        int sectionWidth = levelWidth / GRID_COLS;
+        int sectionHeight = levelHeight / GRID_ROWS;
 
-            if (canPlaceRoom(x, y, w, h)) {
-                createRoom(x, y, w, h);
-                roomCenters.add(new int[] { x + w / 2, y + h / 2 });
-                roomCount++;
+        int maxPossibleWidth = sectionWidth - 4;
+        int maxPossibleHeight = sectionHeight - 4;
+
+        int effectiveMaxWidth = Math.min(MAX_ROOM_SIZE, maxPossibleWidth);
+        int effectiveMaxHeight = Math.min(MAX_ROOM_SIZE, maxPossibleHeight);
+
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLS; col++) {
+                if (random.nextDouble() < 0.75) {  // 75% chance to place a room
+                    int sectionStartX = col * sectionWidth;
+                    int sectionStartY = row * sectionHeight;
+
+                    int roomWidth = random.nextInt(effectiveMaxWidth - MIN_ROOM_SIZE + 1) + MIN_ROOM_SIZE;
+                    int roomHeight = random.nextInt(effectiveMaxHeight - MIN_ROOM_SIZE + 1) + MIN_ROOM_SIZE;
+
+                    int maxOffsetX = sectionWidth - roomWidth - 4;
+                    int maxOffsetY = sectionHeight - roomHeight - 4;
+
+                    int offsetX = (maxOffsetX > 0) ? random.nextInt(maxOffsetX + 1) : 0;
+                    int offsetY = (maxOffsetY > 0) ? random.nextInt(maxOffsetY + 1) : 0;
+
+                    int roomStartX = sectionStartX + 2 + offsetX;
+                    int roomStartY = sectionStartY + 2 + offsetY;
+
+                    makeRoom(roomStartX, roomStartY, roomWidth, roomHeight);
+                    roomExists[row][col] = true;
+                    roomCenters.add(new int[]{roomStartX + roomWidth / 2, roomStartY + roomHeight / 2});
+                }
             }
         }
     }
 
-    private boolean canPlaceRoom(int x, int y, int w, int h) {
-        for (int i = y - 1; i <= y + h; i++) {
-            for (int j = x - 1; j <= x + w; j++) {
-                if (i < 0 || j < 0 || i >= LEVEL_HEIGHT || j >= LEVEL_WIDTH || level[i][j] != EMPTY) {
-                    return false;
-                }
+    private void makeRoom(int startX, int startY, int width, int height) {
+        for (int y = startY; y < startY + height; y++) {
+            for (int x = startX; x < startX + width; x++) {
+                level[y][x] = FLOOR;
             }
         }
-        return true;
+
+        for (int x = startX - 1; x <= startX + width; x++) {
+            if (x >= 0 && x < levelWidth) {
+                if (startY - 1 >= 0) level[startY - 1][x] = WALL;
+                if (startY + height < levelHeight) level[startY + height][x] = WALL;
+            }
+        }
+
+        for (int y = startY - 1; y <= startY + height; y++) {
+            if (y >= 0 && y < levelHeight) {
+                if (startX - 1 >= 0) level[y][startX - 1] = WALL;
+                if (startX + width < levelWidth) level[y][startX + width] = WALL;
+            }
+        }
+
+        int roomIndex = (startY / (levelHeight / 3)) * 3 + (startX / (levelWidth / 3));
+        centers[roomIndex][0] = startX + width / 2;
+        centers[roomIndex][1] = startY + height / 2;
     }
 
     private void createRoom(int x, int y, int w, int h) {
@@ -84,52 +128,85 @@ public class RogueLevel {
             }
         }
         for (int i = y - 1; i <= y + h; i++) {
-            if (i >= 0 && i < LEVEL_HEIGHT) {
+            if (i >= 0 && i < levelHeight) {
                 if (x - 1 >= 0)
                     level[i][x - 1] = WALL;
-                if (x + w < LEVEL_WIDTH)
+                if (x + w < levelWidth)
                     level[i][x + w] = WALL;
             }
         }
         for (int j = x - 1; j <= x + w; j++) {
-            if (j >= 0 && j < LEVEL_WIDTH) {
+            if (j >= 0 && j < levelWidth) {
                 if (y - 1 >= 0)
                     level[y - 1][j] = WALL;
-                if (y + h < LEVEL_HEIGHT)
+                if (y + h < levelHeight)
                     level[y + h][j] = WALL;
             }
         }
     }
 
     private void connectRooms() {
-        for (int i = 1; i < roomCenters.size(); i++) {
-            int[] prev = roomCenters.get(i - 1);
-            int[] current = roomCenters.get(i);
-            createCorridor(prev[0], prev[1], current[0], current[1]);
+        // Grid-based connections
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLS - 1; col++) {
+                if (roomExists[row][col] && roomExists[row][col + 1]) {
+                    int room1Index = row * 3 + col;
+                    int room2Index = row * 3 + (col + 1);
+                    createHallway(
+                        centers[room1Index][0], centers[room1Index][1],
+                        centers[room2Index][0], centers[room2Index][1]
+                    );
+                }
+            }
+        }
+
+        for (int col = 0; col < GRID_COLS; col++) {
+            for (int row = 0; row < GRID_ROWS - 1; row++) {
+                if (roomExists[row][col] && roomExists[row + 1][col]) {
+                    int room1Index = row * 3 + col;
+                    int room2Index = (row + 1) * 3 + col;
+                    createHallway(
+                        centers[room1Index][0], centers[room1Index][1],
+                        centers[room2Index][0], centers[room2Index][1]
+                    );
+                }
+            }
         }
     }
 
-    private void createCorridor(int x1, int y1, int x2, int y2) {
-        while (x1 != x2) {
-            if (x1 < x2)
-                x1++;
-            else
-                x1--;
-            level[y1][x1] = FLOOR;
+    private void createHallway(int x1, int y1, int x2, int y2) {
+        for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+            if (level[y1][x] == EMPTY || level[y1][x] == WALL) {
+                level[y1][x] = HALLWAY;
+            }
         }
-        while (y1 != y2) {
-            if (y1 < y2)
-                y1++;
-            else
-                y1--;
-            level[y1][x1] = FLOOR;
+
+        for (int y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+            if (level[y][x2] == EMPTY || level[y][x2] == WALL) {
+                level[y][x2] = HALLWAY;
+            }
         }
     }
 
     private void placeStairs() {
-        if (!roomCenters.isEmpty()) {
-            int[] lastRoom = roomCenters.get(roomCenters.size() - 1);
-            level[lastRoom[1]][lastRoom[0]] = STAIRS;
+        for (int attempts = 0; attempts < 100; attempts++) {
+            int x = random.nextInt(levelWidth);
+            int y = random.nextInt(levelHeight);
+
+            if (level[y][x] == FLOOR) {
+                level[y][x] = STAIRS_UP;
+                break;
+            }
+        }
+
+        for (int attempts = 0; attempts < 100; attempts++) {
+            int x = random.nextInt(levelWidth);
+            int y = random.nextInt(levelHeight);
+
+            if (level[y][x] == FLOOR && level[y][x] != STAIRS_UP) {
+                level[y][x] = STAIRS_DOWN;
+                break;
+            }
         }
     }
 
