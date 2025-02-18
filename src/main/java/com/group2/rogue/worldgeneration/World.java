@@ -46,8 +46,13 @@ public class World {
         int currentLevelIndex = levels.indexOf(currLevel);
         if (currentLevelIndex < levels.size() - 1) {
             currLevel = levels.get(currentLevelIndex + 1);
-            player = new Player(currLevel);  // place player on new level
-            //player.setLevel(currLevel);
+            // needed to make change so that new player isnt created when moving to next level
+            player.setLevel(currLevel);
+            player.levelIndexUp();
+            int[] startingRoom = currLevel.getStartingRoom();
+            if (startingRoom != null) {
+                player.setPosition(startingRoom[0], startingRoom[1]);
+            }
             System.out.println("Moving to the next level...");
         }
     }
@@ -56,8 +61,13 @@ public class World {
         int currentLevelIndex = levels.indexOf(currLevel);
         if (currentLevelIndex > 0) {
             currLevel = levels.get(currentLevelIndex - 1);
-            player = new Player(currLevel);  // place player on new level
-            //player.setLevel(currLevel);
+            // needed to make change so that new player isnt created when moving to previous level
+            player.setLevel(currLevel);
+            player.levelIndexDown();
+            int[] startingRoom = currLevel.getStartingRoom();
+            if (startingRoom != null) {
+                player.setPosition(startingRoom[0], startingRoom[1]);
+            }
             System.out.println("Moving to the previous level...");
         }
     }
