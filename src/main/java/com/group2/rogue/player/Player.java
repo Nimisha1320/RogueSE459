@@ -8,6 +8,13 @@ public class Player {
     private int x, y;
     private char[][] dungeonMap;
     private static final char PLAYER_ICON = '@';
+    //player stats
+    private static int level = 1;
+    private static int hits = 12;  //the number of health points the player has, if this number reaches 0 the player dies
+    private static int strength = 16;  // strength of the player, influences how much damage they do
+    private static int gold = 0;
+    private static int armor = 5; 
+    private static int experience = 0;
 
     public Player(RogueLevel dungeon) {
         this.dungeonMap = dungeon.getMap();
@@ -46,26 +53,16 @@ public class Player {
         return tile == '.' || tile == '+'; // can move on floor and in hallways
     }
 
-    // public void listenForInput() {
-    //     try {
-    //         enableRawMode(); // Enables raw mode so we can detect key presses instantly
-
-    //         while (true) {
-    //             char key = (char) System.in.read(); // Reads a single character
-    //             if (key == 'q') break; // Allow quitting with 'q'
-    //             movePlayer(key);
-    //         }
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     } finally {
-    //         disableRawMode(); // Restore terminal settings on exit
-    //     }
-    // }
 
     private void printPosition() {
         System.out.println("Player is at (" + x + ", " + y + ")");
     }
 
+    public String getStats() {
+        return String.format("Level: %d  Gold: %d  Hp: %d(%d)  Str: %d  Armor: %d  Exp: %d/%d",
+            level, gold, hits, hits, strength, armor, level, experience);
+    }
+    
 
 
     public int getX() { return x; }

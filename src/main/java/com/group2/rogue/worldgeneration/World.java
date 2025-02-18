@@ -20,11 +20,14 @@ public class World {
 
     public void placePlayer() {
         player = new Player(level);
-        //player.listenForInput();
     }
 
     public void movePlayer(char direction) {
         player.movePlayer(direction);
+    }
+
+    public void printStats(){
+
     }
 
     public void displayWorld() {
@@ -42,5 +45,6 @@ public class World {
             }
             System.out.println();
         }
+        System.out.println(player.getStats());
     }
 }
