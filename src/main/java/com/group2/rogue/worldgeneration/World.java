@@ -20,6 +20,7 @@ public class World {
 
     public void placePlayer() {
         player = new Player(level);
+        //player.listenForInput();
     }
 
     public void movePlayer(char direction) {

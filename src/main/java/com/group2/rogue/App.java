@@ -1,7 +1,11 @@
 package com.group2.rogue;
 
 import com.group2.rogue.worldgeneration.World;
-import java.util.Scanner;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.NonBlockingReader;
+
+import java.io.IOException;
 
 public class App {
     public static void main(String[] args) {
@@ -9,21 +13,33 @@ public class App {
         world.generateWorld();
         world.placePlayer();
 
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            world.displayWorld();
-            System.out.print("Quit (Q) | Move (WASD): ");
-            String input = scanner.nextLine().toUpperCase();
+        System.out.println("Use W A S D to move. Press 'Q' to quit.");
 
-            if (input.equals("Q")) { // Quit game
-                System.out.println("Exiting...");
-                break;
-            }
+        try (Terminal terminal = TerminalBuilder.builder().system(true).jna(true).build();
+             NonBlockingReader reader = terminal.reader()) {
+            
+            terminal.enterRawMode(); // for raw mode, allows for instant key presses
 
-            if (input.length() == 1) {
-                world.movePlayer(input.charAt(0));
+            while (true) {
+                world.displayWorld();
+                System.out.print("Move (WASD) | Quit (Q): ");
+                terminal.flush();
+
+                int input = reader.read();
+                if (input == -1) continue; // no input
+
+                char key = Character.toUpperCase((char) input);
+
+                if (key == 'Q') {
+                    System.out.println("\nExiting...");
+                    break;
+                }
+
+                world.movePlayer(key);
+                System.out.println(); // important for formatting
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        scanner.close();
     }
 }

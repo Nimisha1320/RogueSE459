@@ -2,6 +2,8 @@ package com.group2.rogue.player;
 
 import com.group2.rogue.worldgeneration.RogueLevel;
 
+import java.io.IOException;
+
 public class Player {
     private int x, y;
     private char[][] dungeonMap;
@@ -15,6 +17,8 @@ public class Player {
             this.x = startingRoom[0];
             this.y = startingRoom[1];
         }
+
+
     }
 
     public void movePlayer(char direction) {
@@ -41,6 +45,28 @@ public class Player {
         char tile = dungeonMap[newY][newX];
         return tile == '.' || tile == '+'; // can move on floor and in hallways
     }
+
+    // public void listenForInput() {
+    //     try {
+    //         enableRawMode(); // Enables raw mode so we can detect key presses instantly
+
+    //         while (true) {
+    //             char key = (char) System.in.read(); // Reads a single character
+    //             if (key == 'q') break; // Allow quitting with 'q'
+    //             movePlayer(key);
+    //         }
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     } finally {
+    //         disableRawMode(); // Restore terminal settings on exit
+    //     }
+    // }
+
+    private void printPosition() {
+        System.out.println("Player is at (" + x + ", " + y + ")");
+    }
+
+
 
     public int getX() { return x; }
     public int getY() { return y; }
