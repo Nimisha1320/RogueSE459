@@ -4,10 +4,17 @@ import com.group2.rogue.worldgeneration.RogueLevel;
 
 import java.io.IOException;
 
+
+// private int level;
+
 public class Player {
     private int x, y;
     private char[][] dungeonMap;
     private static final char PLAYER_ICON = '@';
+    private static final char STAIRS_DOWN = '>';
+    private static final char STAIRS_UP = '%'; 
+
+
     //player stats
     private static int level = 1;
     private static int hits = 12;  //the number of health points the player has, if this number reaches 0 the player dies
@@ -50,7 +57,7 @@ public class Player {
             return false;
         }
         char tile = dungeonMap[newY][newX];
-        return tile == '.' || tile == '+'; // can move on floor and in hallways
+        return tile == '.' || tile == '+' || tile == '>' || tile == '%'; // can now move on floor, hallways, stairs up and down
     }
 
 
@@ -63,6 +70,9 @@ public class Player {
             level, gold, hits, hits, strength, armor, level, experience);
     }
     
+    public int getLevel() { return level; }
+
+    public int setLevel(int level) { return this.level = level; }
 
 
     public int getX() { return x; }

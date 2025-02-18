@@ -35,7 +35,7 @@ public class App {
                     break;
                 }
 
-                world.movePlayer(key);
+                world.movePlayer(reader, key);
                 System.out.println(); // important for formatting
             }
         } catch (IOException e) {
